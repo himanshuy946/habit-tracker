@@ -1,29 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Zap,
-  Briefcase,
   CheckCircle,
   Flame,
-  TrendingUp,
   Clock,
-  Droplets,
   Activity,
-  LayoutDashboard,
-  Target,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
+  Droplets,
 } from "lucide-react";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"daily" | "career" | "calendar">(
-    "daily"
-  );
+  const [activeTab, setActiveTab] = useState<"daily" | "calendar">("daily");
   const [dailyTasks, setDailyTasks] = useState<any[]>([]);
-  const [careerGoals, setCareerGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const todayIndex = (new Date().getDay() + 6) % 7;
@@ -32,12 +21,8 @@ export default function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [daily, career] = await Promise.all([
-          fetch(`${API_BASE}/daily`).then((r) => r.json()),
-          fetch(`${API_BASE}/career`).then((r) => r.json()),
-        ]);
+        const daily = await fetch(`${API_BASE}/daily`).then((r) => r.json());
         setDailyTasks(daily);
-        setCareerGoals(career);
       } catch (err) {
         console.error("Sync Error:", err);
       } finally {
@@ -120,20 +105,22 @@ export default function App() {
             <div className="bg-indigo-600 p-2.5 rounded-2xl text-white">
               <Zap size={20} />
             </div>
-            <h1 className="text-xl font-black uppercase">Momentum</h1>
-            <div className="bg-orange-50 px-4 py-2 rounded-2xl border border-orange-100 flex items-center gap-2">
-              <Flame className="text-orange-500" size={18} />
-              <span className="text-orange-700 font-bold text-sm">
-                {momentumScore}% WEEKLY
+            <h1 className="text-xl font-black uppercase tracking-tighter">
+              Momentum
+            </h1>
+            <div className="bg-orange-50 px-4 py-1.5 rounded-2xl border border-orange-100 flex items-center gap-2">
+              <Flame className="text-orange-500" size={16} />
+              <span className="text-orange-700 font-bold text-xs">
+                {momentumScore}% PROGRESS
               </span>
             </div>
           </div>
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+          <div className="flex bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setActiveTab("daily")}
-              className={`px-6 py-2 rounded-xl text-sm font-bold ${
+              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === "daily"
-                  ? "bg-white text-indigo-600 shadow"
+                  ? "bg-white text-indigo-600 shadow-sm"
                   : "text-slate-500"
               }`}
             >
@@ -141,9 +128,9 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab("calendar")}
-              className={`px-6 py-2 rounded-xl text-sm font-bold ${
+              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === "calendar"
-                  ? "bg-white text-indigo-600 shadow"
+                  ? "bg-white text-indigo-600 shadow-sm"
                   : "text-slate-500"
               }`}
             >
@@ -151,27 +138,28 @@ export default function App() {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {medSchedule.map((med) => (
-            <div key={med.id} className="p-4 rounded-3xl border bg-slate-50/50">
-              <div className="flex justify-between mb-3">
-                <span className="text-xs font-black text-slate-500">
+            <div key={med.id} className="p-4 rounded-2xl border bg-slate-50/50">
+              <div className="flex justify-between mb-2">
+                <span className="text-[10px] font-black text-slate-400">
                   {med.time}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 uppercase">
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-200 uppercase font-bold">
                   {med.note}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {med.items.map((it: any, i: number) => (
+                {med.items.map((it, i) => (
                   <span
                     key={i}
-                    className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl border bg-white flex items-center gap-2"
+                    className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-white flex items-center gap-1"
                   >
                     {it.type === "Pill" ? (
-                      <Activity size={12} />
+                      <Activity size={10} />
                     ) : (
-                      <Droplets size={12} />
+                      <Droplets size={10} />
                     )}{" "}
                     {it.name}
                   </span>
@@ -182,31 +170,38 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="p-8 max-w-[1600px] mx-auto">
+      <main className="p-6 max-w-6xl mx-auto">
         {activeTab === "daily" && (
-          <div className="bg-white rounded-[2.5rem] border overflow-hidden shadow-sm">
+          <div className="bg-white rounded-3xl border overflow-hidden shadow-sm">
             <table className="w-full">
               <tbody className="divide-y">
                 {dailyTasks.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50">
-                    <td className="p-6 pl-10">
-                      <p className="font-bold text-lg">{t.label}</p>
-                      <span className="text-xs text-slate-400 uppercase tracking-widest">
-                        <Clock size={14} className="inline mr-1" /> {t.timeSlot}
+                  <tr
+                    key={t.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="p-5 pl-8">
+                      <p className="font-bold text-slate-800">{t.label}</p>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold">
+                        <Clock size={12} className="inline mr-1" /> {t.timeSlot}
                       </span>
                     </td>
-                    <td className="p-4 pr-10 flex justify-end gap-3">
+                    <td className="p-4 pr-8 flex justify-end gap-2">
                       {t.completions.map((done: boolean, i: number) => (
                         <button
                           key={i}
                           onClick={() => toggleDaily(t.id, i)}
-                          className={`w-11 h-11 rounded-2xl flex items-center justify-center border ${
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
                             i === todayIndex
-                              ? "ring-2 ring-indigo-600 ring-offset-4"
+                              ? "ring-2 ring-indigo-600 ring-offset-2"
                               : ""
-                          } ${done ? "bg-indigo-600 text-white" : "bg-white"}`}
+                          } ${
+                            done
+                              ? "bg-indigo-600 text-white border-indigo-600"
+                              : "bg-white border-slate-200"
+                          }`}
                         >
-                          <CheckCircle size={20} />
+                          <CheckCircle size={16} />
                         </button>
                       ))}
                     </td>
