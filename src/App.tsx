@@ -6,10 +6,8 @@ import {
   Clock,
   Activity,
   Droplets,
-  Target,
   Briefcase,
   PlusCircle,
-  TrendingUp,
 } from "lucide-react";
 
 const API_BASE = "https://momentum-server-zjhh.onrender.com/api";
