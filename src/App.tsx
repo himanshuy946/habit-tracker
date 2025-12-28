@@ -6,7 +6,6 @@ import {
   Clock,
   Activity,
   Droplets,
-  Target,
   Briefcase,
   PlusCircle,
   TrendingUp,
