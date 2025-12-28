@@ -8,7 +8,8 @@ import {
   Droplets,
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+// const API_BASE = 'https://daily-habit-tracker.onrender.com/api'|| "http://localhost:3001/api";
+const API_BASE = "https://daily-habit-tracker.onrender.com/api";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"daily" | "calendar">("daily");
