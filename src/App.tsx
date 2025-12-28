@@ -6,6 +6,7 @@ import {
   Clock,
   Activity,
   Droplets,
+  Target,
   Briefcase,
   PlusCircle,
   TrendingUp,
@@ -229,43 +230,45 @@ export default function App() {
           <div className="bg-[#0A0A0A] rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
             <table className="w-full">
               <tbody className="divide-y divide-zinc-900">
-                {dailyTasks.map((t) => (
-                  <tr
-                    key={t.id}
-                    className="hover:bg-zinc-900/30 transition-all group"
-                  >
-                    <td className="p-7 pl-10">
-                      <p className="font-black text-white text-lg group-hover:text-red-500 transition-colors">
-                        {t.label}
-                      </p>
-                      <span className="text-[10px] text-zinc-600 uppercase font-bold flex items-center gap-2 mt-2">
-                        <Clock size={12} /> {t.timeSlot}
-                      </span>
-                    </td>
-                    <td className="p-4 pr-10 flex justify-end gap-2.5">
-                      {t.completions.map((done: boolean, i: number) => (
-                        <button
-                          key={i}
-                          onClick={() => toggleDaily(t.id, i)}
-                          className={`w-11 h-11 rounded-2xl flex items-center justify-center border-2 transition-all ${
-                            i === todayIndex
-                              ? "ring-2 ring-red-500 ring-offset-4 ring-offset-[#050505]"
-                              : ""
-                          } ${
-                            done
-                              ? "bg-red-600 border-red-500 text-white shadow-lg"
-                              : "bg-transparent border-zinc-800"
-                          }`}
-                        >
-                          <CheckCircle
-                            size={20}
-                            fill={done ? "white" : "none"}
-                          />
-                        </button>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
+                {dailyTasks
+                  .filter((t) => !t.label.includes("(Sunday Only)") || isSunday) // 🚀 Hide Sunday tasks during the week
+                  .map((t) => (
+                    <tr
+                      key={t.id}
+                      className="hover:bg-zinc-900/30 transition-all group"
+                    >
+                      <td className="p-7 pl-10">
+                        <p className="font-black text-white text-lg group-hover:text-red-500 transition-colors">
+                          {t.label}
+                        </p>
+                        <span className="text-[10px] text-zinc-600 uppercase font-bold flex items-center gap-2 mt-2">
+                          <Clock size={12} /> {t.timeSlot}
+                        </span>
+                      </td>
+                      <td className="p-4 pr-10 flex justify-end gap-2.5">
+                        {t.completions.map((done: boolean, i: number) => (
+                          <button
+                            key={i}
+                            onClick={() => toggleDaily(t.id, i)}
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center border-2 transition-all ${
+                              i === todayIndex
+                                ? "ring-2 ring-red-500 ring-offset-4 ring-offset-[#050505]"
+                                : ""
+                            } ${
+                              done
+                                ? "bg-red-600 border-red-500 text-white shadow-lg"
+                                : "bg-transparent border-zinc-800"
+                            }`}
+                          >
+                            <CheckCircle
+                              size={20}
+                              fill={done ? "white" : "none"}
+                            />
+                          </button>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -332,15 +335,6 @@ export default function App() {
                 <span className="text-[10px] font-bold text-zinc-600 uppercase">
                   Sync
                 </span>
-              </div>
-            </div>
-            <div className="mt-10 p-6 rounded-2xl bg-zinc-950 border border-zinc-900 flex items-center gap-6 justify-center text-left">
-              <TrendingUp className="text-red-500" size={32} />
-              <div>
-                <p className="text-white font-black">Elite Discipline</p>
-                <p className="text-zinc-600 text-[10px] font-bold uppercase">
-                  Sunday Stack Active.
-                </p>
               </div>
             </div>
           </div>
