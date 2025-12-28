@@ -6,14 +6,16 @@ import {
   Clock,
   Activity,
   Droplets,
+  Target,
+  Briefcase,
 } from "lucide-react";
 
-// const API_BASE = 'https://daily-habit-tracker.onrender.com/api'|| "http://localhost:3001/api";
 const API_BASE = "https://momentum-server-zjhh.onrender.com/api";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"daily" | "calendar">("daily");
+  const [activeTab, setActiveTab] = useState<"daily" | "career">("daily");
   const [dailyTasks, setDailyTasks] = useState<any[]>([]);
+  const [careerGoals, setCareerGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const todayIndex = (new Date().getDay() + 6) % 7;
@@ -22,10 +24,14 @@ export default function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const daily = await fetch(`${API_BASE}/daily`).then((r) => r.json());
+        const [daily, career] = await Promise.all([
+          fetch(`${API_BASE}/daily`).then((r) => r.json()),
+          fetch(`${API_BASE}/career`).then((r) => r.json()),
+        ]);
         setDailyTasks(daily);
+        setCareerGoals(career);
       } catch (err) {
-        console.error("Sync Error:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -63,6 +69,19 @@ export default function App() {
     });
   };
 
+  const toggleCareer = async (goalId: string) => {
+    setCareerGoals((prev) =>
+      prev.map((g) =>
+        g.id === goalId ? { ...g, isCompleted: !g.isCompleted } : g
+      )
+    );
+    await fetch(`${API_BASE}/career/toggle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goalId }),
+    });
+  };
+
   const medSchedule = [
     {
       id: "m1",
@@ -93,61 +112,70 @@ export default function App() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Zap className="text-indigo-600 animate-bounce" size={48} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <Zap className="text-red-500 animate-pulse" size={48} />
       </div>
     );
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC]">
-      <nav className="w-full bg-white border-b p-6 sticky top-0 z-50 shadow-sm flex flex-col gap-6">
+    <div className="min-h-screen w-full bg-[#0F172A] text-slate-200 pb-12">
+      <nav className="w-full bg-[#1E293B] border-b border-slate-700 p-6 sticky top-0 z-50 shadow-xl flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <div className="bg-indigo-600 p-2.5 rounded-2xl text-white">
-              <Zap size={20} />
+            <div className="bg-red-600 p-2 rounded-xl text-white shadow-lg shadow-red-900/20">
+              <Zap size={20} fill="currentColor" />
             </div>
-            <h1 className="text-xl font-black uppercase tracking-tighter">
+            <h1 className="text-xl font-black uppercase tracking-widest text-white">
               Momentum
             </h1>
-            <div className="bg-orange-50 px-4 py-1.5 rounded-2xl border border-orange-100 flex items-center gap-2">
-              <Flame className="text-orange-500" size={16} />
-              <span className="text-orange-700 font-bold text-xs">
-                {momentumScore}% PROGRESS
+            <div className="bg-red-950/30 px-4 py-1.5 rounded-xl border border-red-900/50 flex items-center gap-2">
+              <Flame className="text-red-500" size={16} fill="currentColor" />
+              <span className="text-red-400 font-bold text-xs">
+                {momentumScore}% Matrix Strength
               </span>
             </div>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
             <button
               onClick={() => setActiveTab("daily")}
-              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
                 activeTab === "daily"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-slate-500"
+                  ? "bg-red-600 text-white shadow-lg"
+                  : "text-slate-400"
               }`}
             >
               Matrix
             </button>
             <button
-              onClick={() => setActiveTab("calendar")}
-              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === "calendar"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-slate-500"
+              onClick={() => setActiveTab("career")}
+              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
+                activeTab === "career"
+                  ? "bg-red-600 text-white shadow-lg"
+                  : "text-slate-400"
               }`}
             >
-              Insights
+              Roadmap
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {medSchedule.map((med) => (
-            <div key={med.id} className="p-4 rounded-2xl border bg-slate-50/50">
+            <div
+              key={med.id}
+              className="p-4 rounded-2xl border border-slate-700 bg-slate-800/40"
+            >
               <div className="flex justify-between mb-2">
-                <span className="text-[10px] font-black text-slate-400">
+                <span className="text-[10px] font-black text-slate-500">
                   {med.time}
                 </span>
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-200 uppercase font-bold">
+                <span
+                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                    med.note.includes("Sunday")
+                      ? "bg-red-900/50 text-red-400"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
                   {med.note}
                 </span>
               </div>
@@ -155,7 +183,7 @@ export default function App() {
                 {med.items.map((it, i) => (
                   <span
                     key={i}
-                    className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-white flex items-center gap-1"
+                    className="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-600 bg-slate-900/50 flex items-center gap-1"
                   >
                     {it.type === "Pill" ? (
                       <Activity size={10} />
@@ -172,19 +200,21 @@ export default function App() {
       </nav>
 
       <main className="p-6 max-w-6xl mx-auto">
-        {activeTab === "daily" && (
-          <div className="bg-white rounded-3xl border overflow-hidden shadow-sm">
+        {activeTab === "daily" ? (
+          <div className="bg-[#1E293B] rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
             <table className="w-full">
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-slate-700">
                 {dailyTasks.map((t) => (
                   <tr
                     key={t.id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-slate-800/50 transition-colors group"
                   >
                     <td className="p-5 pl-8">
-                      <p className="font-bold text-slate-800">{t.label}</p>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold">
-                        <Clock size={12} className="inline mr-1" /> {t.timeSlot}
+                      <p className="font-bold text-white group-hover:text-red-400 transition-colors">
+                        {t.label}
+                      </p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1.5 mt-1">
+                        <Clock size={12} /> {t.timeSlot}
                       </span>
                     </td>
                     <td className="p-4 pr-8 flex justify-end gap-2">
@@ -192,17 +222,17 @@ export default function App() {
                         <button
                           key={i}
                           onClick={() => toggleDaily(t.id, i)}
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
                             i === todayIndex
-                              ? "ring-2 ring-indigo-600 ring-offset-2"
+                              ? "ring-2 ring-red-500 ring-offset-4 ring-offset-[#1E293B]"
                               : ""
                           } ${
                             done
-                              ? "bg-indigo-600 text-white border-indigo-600"
-                              : "bg-white border-slate-200"
+                              ? "bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20"
+                              : "bg-slate-900 border-slate-700 hover:border-red-500/50"
                           }`}
                         >
-                          <CheckCircle size={16} />
+                          <CheckCircle size={18} />
                         </button>
                       ))}
                     </td>
@@ -210,6 +240,44 @@ export default function App() {
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {careerGoals.map((goal) => (
+              <div
+                key={goal.id}
+                onClick={() => toggleCareer(goal.id)}
+                className={`p-6 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${
+                  goal.isCompleted
+                    ? "bg-red-900/10 border-red-500/50"
+                    : "bg-[#1E293B] border-slate-700 hover:border-red-500/30"
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`p-3 rounded-2xl ${
+                      goal.isCompleted
+                        ? "bg-red-600 text-white"
+                        : "bg-slate-900 text-slate-500"
+                    }`}
+                  >
+                    <Briefcase size={20} />
+                  </div>
+                  <p
+                    className={`font-bold ${
+                      goal.isCompleted ? "text-white" : "text-slate-400"
+                    }`}
+                  >
+                    {goal.label}
+                  </p>
+                </div>
+                {goal.isCompleted ? (
+                  <CheckCircle className="text-red-500" />
+                ) : (
+                  <Target className="text-slate-700 group-hover:text-red-500/50" />
+                )}
+              </div>
+            ))}
           </div>
         )}
       </main>
