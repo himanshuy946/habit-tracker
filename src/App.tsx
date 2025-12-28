@@ -8,14 +8,19 @@ import {
   Droplets,
   Target,
   Briefcase,
+  PlusCircle,
+  TrendingUp,
 } from "lucide-react";
 
 const API_BASE = "https://momentum-server-zjhh.onrender.com/api";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"daily" | "career">("daily");
+  const [activeTab, setActiveTab] = useState<"daily" | "career" | "calendar">(
+    "daily"
+  );
   const [dailyTasks, setDailyTasks] = useState<any[]>([]);
   const [careerGoals, setCareerGoals] = useState<any[]>([]);
+  const [insights, setInsights] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const todayIndex = (new Date().getDay() + 6) % 7;
@@ -24,12 +29,14 @@ export default function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [daily, career] = await Promise.all([
+        const [daily, career, insightData] = await Promise.all([
           fetch(`${API_BASE}/daily`).then((r) => r.json()),
           fetch(`${API_BASE}/career`).then((r) => r.json()),
+          fetch(`${API_BASE}/insights`).then((r) => r.json()),
         ]);
         setDailyTasks(daily);
         setCareerGoals(career);
+        setInsights(insightData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -97,6 +104,7 @@ export default function App() {
         { name: "Evion", type: "Pill" },
         { name: "Alive Forte", type: "Pill" },
         { name: "Bilypsa", type: "Pill" },
+        { name: "Zyvin C", type: "Scalp" },
       ],
     },
     {
@@ -105,134 +113,155 @@ export default function App() {
       note: isSunday ? "Sunday Stack" : "Night",
       items: [
         { name: "Minoxidil", type: "Scalp" },
+        { name: "Cynical 16", type: "Pill" },
         ...(isSunday ? [{ name: "Uprise D3", type: "Pill" }] : []),
       ],
     },
   ];
 
+  const renderHeatmap = () => {
+    const days = Array.from({ length: 28 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (27 - i));
+      return d.toISOString().split("T")[0];
+    });
+    return (
+      <div className="flex flex-wrap gap-2 justify-center">
+        {days.map((date) => (
+          <div
+            key={date}
+            className={`w-8 h-8 rounded-md border border-zinc-800 transition-all ${
+              insights[date] > 0
+                ? "bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.4)]"
+                : "bg-zinc-900"
+            }`}
+            title={date}
+          />
+        ))}
+      </div>
+    );
+  };
+
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <Zap className="text-red-500 animate-pulse" size={48} />
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <Zap className="text-red-600 animate-pulse" size={64} />
       </div>
     );
 
   return (
-    <div className="min-h-screen w-full bg-[#0F172A] text-slate-200 pb-12">
-      <nav className="w-full bg-[#1E293B] border-b border-slate-700 p-6 sticky top-0 z-50 shadow-xl flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <div className="bg-red-600 p-2 rounded-xl text-white shadow-lg shadow-red-900/20">
-              <Zap size={20} fill="currentColor" />
-            </div>
-            <h1 className="text-xl font-black uppercase tracking-widest text-white">
-              Momentum
-            </h1>
-            <div className="bg-red-950/30 px-4 py-1.5 rounded-xl border border-red-900/50 flex items-center gap-2">
-              <Flame className="text-red-500" size={16} fill="currentColor" />
-              <span className="text-red-400 font-bold text-xs">
-                {momentumScore}% Matrix Strength
-              </span>
-            </div>
-          </div>
-          <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <button
-              onClick={() => setActiveTab("daily")}
-              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
-                activeTab === "daily"
-                  ? "bg-red-600 text-white shadow-lg"
-                  : "text-slate-400"
-              }`}
-            >
-              Matrix
-            </button>
-            <button
-              onClick={() => setActiveTab("career")}
-              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${
-                activeTab === "career"
-                  ? "bg-red-600 text-white shadow-lg"
-                  : "text-slate-400"
-              }`}
-            >
-              Roadmap
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {medSchedule.map((med) => (
-            <div
-              key={med.id}
-              className="p-4 rounded-2xl border border-slate-700 bg-slate-800/40"
-            >
-              <div className="flex justify-between mb-2">
-                <span className="text-[10px] font-black text-slate-500">
-                  {med.time}
+    <div className="min-h-screen w-full bg-[#050505] text-slate-300 pb-12">
+      <nav className="w-full bg-[#0A0A0A] border-b border-red-900/20 p-6 sticky top-0 z-50 shadow-2xl backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <div className="bg-red-600 p-2.5 rounded-2xl text-white shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+                <Zap size={24} fill="currentColor" />
+              </div>
+              <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-white">
+                Momentum
+              </h1>
+              <div className="bg-red-950/20 px-4 py-1.5 rounded-xl border border-red-900/30 flex items-center gap-2">
+                <Flame className="text-red-500" size={16} fill="currentColor" />
+                <span className="text-red-400 font-bold text-xs">
+                  {momentumScore}% Matrix
                 </span>
-                <span
-                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                    med.note.includes("Sunday")
-                      ? "bg-red-900/50 text-red-400"
-                      : "bg-slate-700 text-slate-300"
+              </div>
+            </div>
+            <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-zinc-800">
+              {["daily", "career", "calendar"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                    activeTab === tab
+                      ? "bg-red-600 text-white shadow-lg"
+                      : "text-zinc-500"
                   }`}
                 >
-                  {med.note}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {med.items.map((it, i) => (
-                  <span
-                    key={i}
-                    className="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-600 bg-slate-900/50 flex items-center gap-1"
-                  >
-                    {it.type === "Pill" ? (
-                      <Activity size={10} />
-                    ) : (
-                      <Droplets size={10} />
-                    )}{" "}
-                    {it.name}
-                  </span>
-                ))}
-              </div>
+                  {tab}
+                </button>
+              ))}
             </div>
-          ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {medSchedule.map((med) => (
+              <div
+                key={med.id}
+                className="p-4 rounded-3xl border border-zinc-800 bg-zinc-900/30"
+              >
+                <div className="flex justify-between mb-3">
+                  <span className="text-[10px] font-black text-zinc-600">
+                    {med.time}
+                  </span>
+                  <span
+                    className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                      med.note.includes("Sunday")
+                        ? "bg-red-600 text-white"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {med.note}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {med.items.map((it, i) => (
+                    <span
+                      key={i}
+                      className="text-[10px] font-black px-3 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900/80 flex items-center gap-2"
+                    >
+                      {it.type === "Pill" ? (
+                        <Activity size={12} className="text-red-500" />
+                      ) : (
+                        <Droplets size={12} className="text-blue-500" />
+                      )}{" "}
+                      {it.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </nav>
 
-      <main className="p-6 max-w-6xl mx-auto">
+      <main className="p-8 max-w-7xl mx-auto">
         {activeTab === "daily" ? (
-          <div className="bg-[#1E293B] rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
+          <div className="bg-[#0A0A0A] rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl">
             <table className="w-full">
-              <tbody className="divide-y divide-slate-700">
+              <tbody className="divide-y divide-zinc-900">
                 {dailyTasks.map((t) => (
                   <tr
                     key={t.id}
-                    className="hover:bg-slate-800/50 transition-colors group"
+                    className="hover:bg-zinc-900/30 transition-all group"
                   >
-                    <td className="p-5 pl-8">
-                      <p className="font-bold text-white group-hover:text-red-400 transition-colors">
+                    <td className="p-7 pl-10">
+                      <p className="font-black text-white text-lg group-hover:text-red-500 transition-colors">
                         {t.label}
                       </p>
-                      <span className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1.5 mt-1">
+                      <span className="text-[10px] text-zinc-600 uppercase font-bold flex items-center gap-2 mt-2">
                         <Clock size={12} /> {t.timeSlot}
                       </span>
                     </td>
-                    <td className="p-4 pr-8 flex justify-end gap-2">
+                    <td className="p-4 pr-10 flex justify-end gap-2.5">
                       {t.completions.map((done: boolean, i: number) => (
                         <button
                           key={i}
                           onClick={() => toggleDaily(t.id, i)}
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
+                          className={`w-11 h-11 rounded-2xl flex items-center justify-center border-2 transition-all ${
                             i === todayIndex
-                              ? "ring-2 ring-red-500 ring-offset-4 ring-offset-[#1E293B]"
+                              ? "ring-2 ring-red-500 ring-offset-4 ring-offset-[#050505]"
                               : ""
                           } ${
                             done
-                              ? "bg-red-600 text-white border-red-500 shadow-lg shadow-red-900/20"
-                              : "bg-slate-900 border-slate-700 hover:border-red-500/50"
+                              ? "bg-red-600 border-red-500 text-white shadow-lg"
+                              : "bg-transparent border-zinc-800"
                           }`}
                         >
-                          <CheckCircle size={18} />
+                          <CheckCircle
+                            size={20}
+                            fill={done ? "white" : "none"}
+                          />
                         </button>
                       ))}
                     </td>
@@ -241,43 +270,80 @@ export default function App() {
               </tbody>
             </table>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        ) : activeTab === "career" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {careerGoals.map((goal) => (
               <div
                 key={goal.id}
                 onClick={() => toggleCareer(goal.id)}
-                className={`p-6 rounded-[2rem] border transition-all cursor-pointer flex items-center justify-between group ${
+                className={`p-8 rounded-[3rem] border transition-all cursor-pointer relative group ${
                   goal.isCompleted
-                    ? "bg-red-900/10 border-red-500/50"
-                    : "bg-[#1E293B] border-slate-700 hover:border-red-500/30"
+                    ? "bg-red-950/10 border-red-600/50"
+                    : "bg-zinc-900/30 border-zinc-800"
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`p-3 rounded-2xl ${
-                      goal.isCompleted
-                        ? "bg-red-600 text-white"
-                        : "bg-slate-900 text-slate-500"
-                    }`}
-                  >
-                    <Briefcase size={20} />
-                  </div>
-                  <p
-                    className={`font-bold ${
-                      goal.isCompleted ? "text-white" : "text-slate-400"
-                    }`}
-                  >
-                    {goal.label}
-                  </p>
+                <div
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
+                    goal.isCompleted
+                      ? "bg-red-600 text-white"
+                      : "bg-zinc-800 text-zinc-500"
+                  }`}
+                >
+                  <Briefcase size={24} />
                 </div>
-                {goal.isCompleted ? (
-                  <CheckCircle className="text-red-500" />
-                ) : (
-                  <Target className="text-slate-700 group-hover:text-red-500/50" />
-                )}
+                <h3
+                  className={`text-xl font-black ${
+                    goal.isCompleted ? "text-white" : "text-zinc-400"
+                  }`}
+                >
+                  {goal.label}
+                </h3>
+                <div className="absolute top-8 right-8">
+                  {goal.isCompleted ? (
+                    <CheckCircle
+                      size={28}
+                      className="text-red-500"
+                      fill="currentColor"
+                    />
+                  ) : (
+                    <PlusCircle
+                      size={28}
+                      className="text-zinc-800 group-hover:text-red-900"
+                    />
+                  )}
+                </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="bg-[#0A0A0A] p-10 rounded-[2.5rem] border border-zinc-800 shadow-2xl text-center">
+            <h2 className="text-xl font-black text-white uppercase tracking-widest mb-8">
+              Neural Consistency
+            </h2>
+            {renderHeatmap()}
+            <div className="mt-8 flex justify-center gap-6 items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-zinc-900 rounded-sm border border-zinc-800" />
+                <span className="text-[10px] font-bold text-zinc-600 uppercase">
+                  Off
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-sm" />
+                <span className="text-[10px] font-bold text-zinc-600 uppercase">
+                  Sync
+                </span>
+              </div>
+            </div>
+            <div className="mt-10 p-6 rounded-2xl bg-zinc-950 border border-zinc-900 flex items-center gap-6 justify-center text-left">
+              <TrendingUp className="text-red-500" size={32} />
+              <div>
+                <p className="text-white font-black">Elite Discipline</p>
+                <p className="text-zinc-600 text-[10px] font-bold uppercase">
+                  Sunday Stack Active.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </main>
